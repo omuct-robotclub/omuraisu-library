@@ -1,2 +1,2 @@
-BasedOnStyle(String) = Google
-IndentWidth = 2
+BasedOnStyle: Google
+IndentWidth: 2

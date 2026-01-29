@@ -1,8 +1,9 @@
 #ifndef C620_HPP
 #define C620_HPP
 
-#include "mbed.h"
 #include <array>
+
+#include "mbed.h"
 
 namespace dji {
 
@@ -22,7 +23,7 @@ struct C620Data {
 
 /// @brief The C620 motor driver class for M3508.
 class C620 {
-public:
+ public:
   C620();
   /// @brief Construct a new C620 object
   /// @param can_rx CAN receive pin @param can_tx CAN transmit pin
@@ -30,7 +31,7 @@ public:
       : can(*(new CAN(can_rx, can_tx, 1000000))) {
     memset(output_, 0, sizeof(output_));
   }
-  C620(CAN &can) : can(can) { memset(output_, 0, sizeof(output_)); }
+  C620(CAN& can) : can(can) { memset(output_, 0, sizeof(output_)); }
 
   ~C620() { delete &can; }
 
@@ -129,13 +130,13 @@ public:
     return data_[id - 1].temp;
   }
 
-private:
-  CAN &can;
+ private:
+  CAN& can;
   std::array<C620Data, 8> data_;
   uint8_t output_[2][8];
   int16_t max_output;
 };
 
-} // namespace dji
+}  // namespace dji
 
-#endif // C620_HPP
+#endif  // C620_HPP
