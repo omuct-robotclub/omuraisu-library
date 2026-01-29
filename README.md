@@ -2,6 +2,8 @@
 
 ロボット開発において頻繁に使用される基本的な機能を提供するC++ライブラリ群
 
+PlatformIOでの使用をメインの用途として想定しています。
+
 ## 機能
 
 ### chassis/mecanum.hpp
@@ -29,6 +31,10 @@
 ロボマスモーター（M3508/C620）の制御を提供
 
 - **注意**: このモジュールはmbed環境が必要です
+
+### controller/controller.hpp
+
+- **注意**: https://github.com/NekoChan9382/cobs-serial-manager に依存しています
 
 ## ビルド方法
 

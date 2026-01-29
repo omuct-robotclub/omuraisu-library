@@ -9,7 +9,8 @@
     "dji",
     "c620",
     "m3508",
-    "coordinate"
+    "coordinate",
+    "controller"
   ],
   "repository": {
     "type": "git",
@@ -23,6 +24,13 @@
   "license": "MIT",
   "frameworks": ["mbed", "*"],
   "platforms": "*",
+  "dependencies": {
+    "cobs-serial-manager": {
+      "owner": "NekoChan9382",
+      "name": "cobs-serial-manager",
+      "version": "*"
+    }
+  },
   "build": {
     "srcDir": "src",
     "includeDir": "src",
