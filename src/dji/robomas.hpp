@@ -1,142 +1,87 @@
-#ifndef C620_HPP
-#define C620_HPP
+#ifndef ROBOMAS_HPP
+#define ROBOMAS_HPP
 
-#include <array>
-
-#include "mbed.h"
+#include "can_interface.hpp"
+#include "robomas_core.hpp"
 
 namespace dji {
 
-struct C620Data {
-  uint16_t angle;
-  int16_t rpm = 0;
-  int16_t ampere;
-  uint8_t temp;
-
-  void parse(const uint8_t data[8]) {
-    angle = uint16_t(data[0] << 8 | data[1]);
-    rpm = int16_t(data[2] << 8 | data[3]);
-    ampere = int16_t(data[4] << 8 | data[5]);
-    temp = data[6];
-  }
-};
-
-/// @brief The C620 motor driver class for M3508.
-class C620 {
+/// @brief Robomas/M3508モーター制御クラス（CAN通信込み）
+/// @details ICanBusインターフェースを通じてCAN通信を行う。
+///          各プラットフォーム用のICanBus実装を渡して使用する。
+class Robomas {
  public:
-  C620();
-  /// @brief Construct a new C620 object
-  /// @param can_rx CAN receive pin @param can_tx CAN transmit pin
-  C620(PinName can_rx, PinName can_tx)
-      : can(*(new CAN(can_rx, can_tx, 1000000))) {
-    memset(output_, 0, sizeof(output_));
-  }
-  C620(CAN& can) : can(can) { memset(output_, 0, sizeof(output_)); }
+  /// @brief コンストラクタ
+  /// @param can CANバスインターフェースへの参照
+  explicit Robomas(ICanBus& can) : can_(can) {}
 
-  ~C620() { delete &can; }
+  /// @brief 最大出力を設定
+  /// @param max 最大出力値（絶対値）
+  void set_max_output(int16_t max) { core_.set_max_output(max); }
 
-  void set_max_output(const int16_t max) { max_output = abs(max); }
-
-  /// @brief read data from C620
+  /// @brief Robomasからデータを読み取り
+  /// @return 読み取ったモーターのインデックス（0-7）、データなしの場合-1
   int read_data() {
-    CANMessage msg;
-    if (can.read(msg); 0x201 <= msg.id && msg.id <= 0x208) {
-      data_[msg.id - 0x201].parse(msg.data);
-      return msg.id - 0x201;
-    } else {
-      return -1;
+    CanMessage msg;
+    if (can_.read(msg)) {
+      return core_.parse_received(msg.id, msg.data);
     }
-    // printf("rpm: 1: %d, 2: %d, 3: %d, 4: %d\n", data_[0].rpm, data_[1].rpm,
-    // data_[2].rpm, data_[3].rpm);
-  }
-  /// @brief set output power
-  /// @param current output power
-  /// @param id CAN ID
-  void set_output(const int16_t current, const int id) {
-    int16_t fixed_current =
-        std::clamp((int)current, -max_output, (int)max_output);
-    if (id < 1 || 8 < id) {
-      return;
-    }
-    if (id <= 4) {
-      output_[0][(id - 1) * 2] = fixed_current >> 8 & 0xFF;
-      output_[0][(id - 1) * 2 + 1] = fixed_current & 0xFF;
-    } else {
-      output_[1][(id - 5) * 2] = fixed_current >> 8 & 0xFF;
-      output_[1][(id - 5) * 2 + 1] = fixed_current & 0xFF;
-    }
-  }
-  /// @brief set output power
-  /// @param current output power with 8 array
-  void set_output(const int16_t current[8]) {
-    for (int i = 0; i < 8; i++) {
-      set_output(current[i], i + 1);
-    }
+    return -1;
   }
 
-  void set_output_percent(const float percent, const int id) {
-    if (id < 1 || 8 < id) {
-      return;
-    }
-    int16_t current = percent * max_output;
-    set_output(current, id);
+  /// @brief モーターへの出力を設定
+  /// @param current 出力電流値
+  /// @param id モーターID（1-8）
+  void set_output(int16_t current, int id) { core_.set_output(current, id); }
+
+  /// @brief 全モーターへの出力を設定
+  /// @param current 8個の出力電流値の配列
+  void set_output(const int16_t current[8]) { core_.set_output(current); }
+
+  /// @brief パーセント指定で出力を設定
+  /// @param percent 出力パーセント（-1.0〜1.0）
+  /// @param id モーターID（1-8）
+  void set_output_percent(float percent, int id) {
+    core_.set_output_percent(percent, id);
   }
 
-  /// @brief write output power to C620
+  /// @brief Robomasへ出力を書き込み
+  /// @return 両グループの送信が成功した場合true
   bool write() {
-    bool is_success[2];
-    is_success[0] = can.write(CANMessage(0x200, output_[0], 8));
-    is_success[1] = can.write(CANMessage(0x1FF, output_[1], 8));
+    CanMessage msg1, msg2;
+    core_.get_output_group1(msg1.id, msg1.data);
+    core_.get_output_group2(msg2.id, msg2.data);
 
-    return is_success[0] && is_success[1];
+    bool success1 = can_.write(msg1);
+    bool success2 = can_.write(msg2);
+
+    return success1 && success2;
   }
 
-  int16_t get_current(const int id) const {
-    if (id < 1 || 8 < id) {
-      return 0;
-    }
-    if (id <= 4) {
-      return output_[0][(id - 1) * 2] << 8 | output_[0][(id - 1) * 2 + 1];
-    } else {
-      return output_[1][(id - 5) * 2] << 8 | output_[1][(id - 5) * 2 + 1];
-    }
-  }
+  /// @brief 設定された電流値を取得
+  int16_t get_current(int id) const { return core_.get_current(id); }
 
-  int16_t get_angle(const int id) const {
-    if (id < 1 || 8 < id) {
-      return 0;
-    }
-    return data_[id - 1].angle;
-  }
+  /// @brief モーターの角度を取得
+  uint16_t get_angle(int id) const { return core_.get_angle(id); }
 
-  int16_t get_rpm(const int id) const {
-    if (id < 1 || 8 < id) {
-      return 0;
-    }
-    return data_[id - 1].rpm;
-  }
+  /// @brief モーターの回転数を取得
+  int16_t get_rpm(int id) const { return core_.get_rpm(id); }
 
-  int16_t get_ampere(const int id) const {
-    if (id < 1 || 8 < id) {
-      return 0;
-    }
-    return data_[id - 1].ampere;
-  }
+  /// @brief モーターの電流値を取得
+  int16_t get_ampere(int id) const { return core_.get_ampere(id); }
 
-  uint8_t get_temp(const int id) const {
-    if (id < 1 || 8 < id) {
-      return 0;
-    }
-    return data_[id - 1].temp;
-  }
+  /// @brief モーターの温度を取得
+  uint8_t get_temp(int id) const { return core_.get_temp(id); }
+
+  /// @brief コアロジックへの直接アクセス
+  RobomasCore& core() { return core_; }
+  const RobomasCore& core() const { return core_; }
 
  private:
-  CAN& can;
-  std::array<C620Data, 8> data_;
-  uint8_t output_[2][8];
-  int16_t max_output;
+  ICanBus& can_;
+  RobomasCore core_;
 };
 
 }  // namespace dji
 
-#endif  // C620_HPP
+#endif  // ROBOMAS_HPP
