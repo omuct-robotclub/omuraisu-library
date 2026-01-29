@@ -1,0 +1,42 @@
+{
+  "name": "omuraisu-library",
+  "version": "1.0.0",
+  "description": "Robot development C++ library for chassis control, coordinate systems, PID, and DJI motor control",
+  "keywords": [
+    "robotics",
+    "mecanum",
+    "pid",
+    "dji",
+    "c620",
+    "m3508",
+    "coordinate"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NekoChan9382/omuraisu-library.git"
+  },
+  "authors": [
+    {
+      "name": "BIT"
+    }
+  ],
+  "license": "MIT",
+  "frameworks": ["mbed", "*"],
+  "platforms": "*",
+  "build": {
+    "srcDir": "src",
+    "includeDir": "src",
+    "srcFilter": [
+      "+<coordinate/*.cpp>"
+    ]
+  },
+  "headers": [
+    "src/chassis/mecanum.hpp",
+    "src/coordinate/coordinate.hpp",
+    "src/pid/pid.hpp",
+    "src/dji/robomas.hpp",
+    "src/dji/robomas_core.hpp",
+    "src/dji/can_interface.hpp",
+    "src/dji/can_mbed.hpp"
+  ]
+}

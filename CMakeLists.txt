@@ -39,15 +39,11 @@ target_include_directories(omuraisu_chassis INTERFACE
 )
 target_link_libraries(omuraisu_chassis INTERFACE coordinate)
 
-# DJI/Robomasライブラリはmbed依存のため、条件付きで追加
-# option(ENABLE_DJI "Enable DJI/Robomas library (requires mbed)" OFF)
-# if(ENABLE_DJI)
-#     add_library(omuraisu_dji INTERFACE)
-#     target_include_directories(omuraisu_dji INTERFACE
-#         $<BUILD_INTERFACE:${OMURAISU_INCLUDE_DIR}>
-#         $<INSTALL_INTERFACE:include>
-#     )
-# endif()
+add_library(omuraisu_dji INTERFACE)
+target_include_directories(omuraisu_dji INTERFACE
+    $<BUILD_INTERFACE:${OMURAISU_INCLUDE_DIR}>
+    $<INSTALL_INTERFACE:include>
+)
 
 # メインライブラリ（全てをまとめる）
 add_library(omuraisu INTERFACE)
@@ -55,6 +51,7 @@ target_link_libraries(omuraisu INTERFACE
     coordinate
     omuraisu_pid
     omuraisu_chassis
+    omuraisu_dji
 )
 
 # サンプルのビルドオプション
@@ -73,7 +70,7 @@ endif()
 # インストール設定
 include(GNUInstallDirs)
 
-install(TARGETS coordinate omuraisu_pid omuraisu_chassis omuraisu
+install(TARGETS coordinate omuraisu_pid omuraisu_chassis omuraisu_dji omuraisu
     EXPORT omuraisu-targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
