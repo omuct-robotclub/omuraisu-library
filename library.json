@@ -25,11 +25,7 @@
   "frameworks": ["mbed", "*"],
   "platforms": "*",
   "dependencies": {
-    "cobs-serial-manager": {
-      "owner": "NekoChan9382",
-      "name": "cobs-serial-manager",
-      "version": "*"
-    }
+    "cobs-serial-manager": "https://github.com/NekoChan9382/cobs-serial-manager.git"
   },
   "build": {
     "srcDir": "src",
