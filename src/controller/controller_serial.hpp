@@ -1,7 +1,7 @@
 #ifndef CONTROLLER_SERIAL_HPP
 #define CONTROLLER_SERIAL_HPP
 
-#include <cobs.hpp>
+#include <cobs/cobs.hpp>
 #include <cstring>
 #include <vector>
 
