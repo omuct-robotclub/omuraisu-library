@@ -13,6 +13,17 @@ class ServoCore {
  public:
   ServoCore(uint8_t id) : id_(id) { std::memset(data_, 0, sizeof(data_)); }
 
+  void set_degree(float degree) {
+    // 0-180度を0-255の範囲に変換
+    uint8_t value = static_cast<uint8_t>(degree / 180.0f * 255);
+    std::memset(data_, value, sizeof(data_));
+  }
+  void set_degree(float[sizeof(data_)] degrees) {
+    for (size_t i = 0; i < sizeof(data_); ++i) {
+      set_degree(degrees[i]);
+    }
+  }
+
   CANMessage to_can_message() const {
     CANMessage msg;
     msg.id = id_;
