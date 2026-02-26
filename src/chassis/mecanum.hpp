@@ -23,6 +23,12 @@ class Mecanum {
       wheel_pos[i] = static_cast<coordinate::CoordinatePolar>(pos[i]);
     }
   }
+  Mecanum(const float radius) {
+    for (int i = 0; i < 4; ++i) {
+      constexpr float ofs = 2 * M_PI / 4;
+      wheel_pos[i] = coordinate::CoordinatePolar(radius, ofs * i + M_PI / 4);
+    }
+  }
 
   void calc(const coordinate::Velocity& vel, float* result) {
     for (int i = 0; i < 4; ++i) {

@@ -124,6 +124,9 @@ std::array<CoordinatePolar, 4> wheel_pos = {
   CoordinatePolar(0.2f, 7 * M_PI / 4),
 };
 Mecanum mecanum(wheel_pos);
+// ホイールの中心からの半径でホイール位置を指定(各ホイールが正方形に配置されている場合)
+float radius = 300;
+Mecanum mecanum(radius);
 
 // 目標速度 → 各ホイール速度
 Velocity vel = {1.0f, 0.0f, 0.0f};  // 前進
