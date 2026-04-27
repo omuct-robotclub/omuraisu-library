@@ -1,5 +1,5 @@
 {
-  "name": "omuraisu-library-c",
+  "name": "omuraisu-library",
   "version": "1.0.0",
   "description": "Robot development C++ library for chassis control, coordinate systems, PID, and DJI motor control",
   "keywords": [
@@ -14,7 +14,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/omuct-robotclub/omuraisu-library-c.git"
+    "url": "https://github.com/omuct-robotclub/omuraisu-library.git"
   },
   "authors": [
     {
