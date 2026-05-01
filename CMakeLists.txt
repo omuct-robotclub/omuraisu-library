@@ -101,6 +101,14 @@ target_include_directories(omuraisu_controller PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
+add_library(omuraisu_sensor
+    src/sensor/amt21/amt21_core.c
+)
+target_include_directories(omuraisu_sensor PUBLIC
+    $<BUILD_INTERFACE:${OMURAISU_INCLUDE_DIR_C}>
+    $<INSTALL_INTERFACE:include>
+)
+
 add_library(omuraisu_servo
     src/servo/servo_core.c
 )
@@ -120,6 +128,7 @@ target_link_libraries(omuraisu_c INTERFACE
     omuraisu_can
     omuraisu_dji
     omuraisu_controller
+    omuraisu_sensor
     omuraisu_servo
 )
 
@@ -263,7 +272,7 @@ endif()
 # インストール設定
 include(GNUInstallDirs)
 
-install(TARGETS omuraisu_coordinate omuraisu_pid omuraisu_chassis omuraisu_cobs omuraisu_can omuraisu_dji omuraisu_controller omuraisu_servo omuraisu_c omuraisu_cpp_can omuraisu_cpp_chassis omuraisu_cpp_cobs omuraisu_cpp_controller omuraisu_cpp_coordinate omuraisu_cpp_dji omuraisu_cpp_pid omuraisu_cpp omuraisu_cpp_servo omuraisu
+install(TARGETS omuraisu_coordinate omuraisu_pid omuraisu_chassis omuraisu_cobs omuraisu_can omuraisu_dji omuraisu_controller omuraisu_sensor omuraisu_servo omuraisu_c omuraisu_cpp_can omuraisu_cpp_chassis omuraisu_cpp_cobs omuraisu_cpp_controller omuraisu_cpp_coordinate omuraisu_cpp_dji omuraisu_cpp_pid omuraisu_cpp omuraisu_cpp_servo omuraisu
     EXPORT omuraisu-targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
