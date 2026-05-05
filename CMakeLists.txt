@@ -65,6 +65,24 @@ target_include_directories(omuraisu_can PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
+add_library(omuraisu_serial
+    src/serial/serial_interface.c
+    src/serial/serial_cube.c
+)
+target_include_directories(omuraisu_serial PUBLIC
+    $<BUILD_INTERFACE:${OMURAISU_INCLUDE_DIR_C}>
+    $<INSTALL_INTERFACE:include>
+)
+
+option(OMURAISU_SERIAL_STM32_ENABLE "Enable STM32 Cube serial adapter" OFF)
+
+if(OMURAISU_SERIAL_STM32_ENABLE)
+    target_sources(omuraisu_serial PRIVATE
+        src/serial/serial_stm32.c
+    )
+    target_compile_definitions(omuraisu_serial PRIVATE OMURAISU_SERIAL_STM32_ENABLE)
+endif()
+
 option(OMURAISU_CAN_STM32_ENABLE "Enable STM32 Cube CAN adapter" OFF)
 option(OMURAISU_CAN_STM32_FDCAN_ENABLE "Enable STM32 FDCAN support in STM32 CAN adapter" ON)
 option(OMURAISU_BUILD_STM32_CAN "[Deprecated] Use OMURAISU_CAN_STM32_ENABLE" OFF)
@@ -126,6 +144,7 @@ target_link_libraries(omuraisu_c INTERFACE
     omuraisu_chassis
     omuraisu_cobs
     omuraisu_can
+    omuraisu_serial
     omuraisu_dji
     omuraisu_controller
     omuraisu_sensor
@@ -145,6 +164,20 @@ target_include_directories(omuraisu_cpp_can PUBLIC
 )
 target_link_libraries(omuraisu_cpp_can PUBLIC
     omuraisu_can
+)
+
+add_library(omuraisu_cpp_serial STATIC
+    src/cpp/serial/serial_interface.cpp
+    src/cpp/serial/serial_mbed.cpp
+    src/cpp/serial/serial_boost.cpp
+)
+target_include_directories(omuraisu_cpp_serial PUBLIC
+    $<BUILD_INTERFACE:${OMURAISU_INCLUDE_DIR_CPP}>
+    $<BUILD_INTERFACE:${OMURAISU_INCLUDE_DIR_C}>
+    $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(omuraisu_cpp_serial PUBLIC
+    omuraisu_serial
 )
 
 add_library(omuraisu_cpp_chassis STATIC
@@ -247,6 +280,7 @@ target_link_libraries(omuraisu_cpp INTERFACE
     omuraisu_cpp_dji
     omuraisu_cpp_pid
     omuraisu_cpp_servo
+    omuraisu_cpp_serial
 )
 
 # メインライブラリ（全てをまとめる）
@@ -272,7 +306,7 @@ endif()
 # インストール設定
 include(GNUInstallDirs)
 
-install(TARGETS omuraisu_coordinate omuraisu_pid omuraisu_chassis omuraisu_cobs omuraisu_can omuraisu_dji omuraisu_controller omuraisu_sensor omuraisu_servo omuraisu_c omuraisu_cpp_can omuraisu_cpp_chassis omuraisu_cpp_cobs omuraisu_cpp_controller omuraisu_cpp_coordinate omuraisu_cpp_dji omuraisu_cpp_pid omuraisu_cpp omuraisu_cpp_servo omuraisu
+install(TARGETS omuraisu_coordinate omuraisu_pid omuraisu_chassis omuraisu_cobs omuraisu_can omuraisu_serial omuraisu_dji omuraisu_controller omuraisu_sensor omuraisu_servo omuraisu_c omuraisu_cpp_can omuraisu_cpp_serial omuraisu_cpp_chassis omuraisu_cpp_cobs omuraisu_cpp_controller omuraisu_cpp_coordinate omuraisu_cpp_dji omuraisu_cpp_pid omuraisu_cpp_servo omuraisu_cpp omuraisu
     EXPORT omuraisu-targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
