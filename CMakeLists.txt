@@ -84,7 +84,7 @@ if(OMURAISU_CAN_STM32_ENABLE)
 endif()
 
 add_library(omuraisu_vesc
-    src/cpp/vesc/vesc_core.c
+    src/vesc/vesc_core.c
 )
 target_include_directories(omuraisu_vesc PUBLIC
     $<BUILD_INTERFACE:${OMURAISU_INCLUDE_DIR_C}>
