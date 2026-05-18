@@ -3,9 +3,6 @@
 #include <stdint.h>
 #include <string.h>
 
-const uint8_t VESC_ID_MIN = 1;
-const uint8_t VESC_ID_MAX = 8;
-
 const uint32_t VESC_CAN_PACKET_SET_DUTY = 0;
 const uint32_t VESC_CAN_PACKET_SET_CURRENT = 1;
 const uint32_t VESC_CAN_PACKET_SET_CURRENT_BRAKE = 2;
@@ -42,18 +39,8 @@ static float om_vesc_clamp_float(float value, float max) {
   return value;
 }
 
-static int om_vesc_id_to_index(int id) {
-  if (id < VESC_ID_MIN || id > VESC_ID_MAX) {
-    return -1;
-  }
-  return id - 1;
-}
-
 static void om_vesc_core_set_output_i32(VescCore* core, uint32_t packet_id,
-                                        int32_t value, int id) {
-  if (om_vesc_id_to_index(id) < 0) {
-    return;
-  }
+                                        int32_t value, uint8_t id) {
   core->output_.id = (packet_id << 8) | (uint32_t)id;
   core->output_.len = 4;
   memset(core->output_.data, 0, sizeof(core->output_.data));
@@ -84,14 +71,17 @@ VescTxFrame om_vesc_tx_frame_init() {
 
 VescCore om_vesc_core_init() {
   VescCore core;
-  for (int i = 0; i < 8; ++i) {
-    core.data_[i] = om_vesc_data_init();
-  }
-  core.output_ = om_vesc_tx_frame_init();
-  core.max_id_ = VESC_ID_MAX;
-  core.max_current_ = 30.0f;
-  core.max_duty_ = 1.0f;
+  om_vesc_core_init_in_place(&core);
   return core;
+}
+
+void om_vesc_core_init_in_place(VescCore* core) {
+  for (int i = 0; i < (int)VESC_ID_COUNT; ++i) {
+    core->data_[i] = om_vesc_data_init();
+  }
+  core->output_ = om_vesc_tx_frame_init();
+  core->max_current_ = 30.0f;
+  core->max_duty_ = 1.0f;
 }
 
 void om_vesc_core_set_max_current(VescCore* core, float max) {
@@ -107,46 +97,46 @@ void om_vesc_core_set_max_duty(VescCore* core, float max) {
 
 int om_vesc_core_parse(VescCore* core, uint32_t id, const uint8_t data[8]) {
   const uint32_t packet_id = (id >> 8) & 0xFFU;
-  const int controller_id = (int)(id & 0xFFU);
-  const int index = om_vesc_id_to_index(controller_id);
+  const uint8_t controller_id = (uint8_t)(id & 0xFFU);
 
-  if (packet_id != VESC_CAN_PACKET_STATUS || index < 0) {
+  if (packet_id != VESC_CAN_PACKET_STATUS) {
     return -1;
   }
 
-  om_vesc_data_parse(&core->data_[index], data);
-  return index;
+  om_vesc_data_parse(&core->data_[controller_id], data);
+  return controller_id;
 }
 
-void om_vesc_core_set_current(VescCore* core, float current, int id) {
+void om_vesc_core_set_current(VescCore* core, float current, uint8_t id) {
   const float clamped_current =
       om_vesc_clamp_float(current, core->max_current_);
   om_vesc_core_set_output_i32(core, VESC_CAN_PACKET_SET_CURRENT,
                               (int32_t)(clamped_current * 1000.0f), id);
 }
 
-void om_vesc_core_set_current_percent(VescCore* core, float percent, int id) {
+void om_vesc_core_set_current_percent(VescCore* core, float percent,
+                                      uint8_t id) {
   om_vesc_core_set_current(core, percent * core->max_current_, id);
 }
 
-void om_vesc_core_set_brake_current(VescCore* core, float current, int id) {
+void om_vesc_core_set_brake_current(VescCore* core, float current, uint8_t id) {
   const float clamped_current =
       om_vesc_clamp_float(current, core->max_current_);
   om_vesc_core_set_output_i32(core, VESC_CAN_PACKET_SET_CURRENT_BRAKE,
                               (int32_t)(clamped_current * 1000.0f), id);
 }
 
-void om_vesc_core_set_duty(VescCore* core, float duty, int id) {
+void om_vesc_core_set_duty(VescCore* core, float duty, uint8_t id) {
   const float clamped_duty = om_vesc_clamp_float(duty, core->max_duty_);
   om_vesc_core_set_output_i32(core, VESC_CAN_PACKET_SET_DUTY,
                               (int32_t)(clamped_duty * 100000.0f), id);
 }
 
-void om_vesc_core_set_duty_percent(VescCore* core, float percent, int id) {
+void om_vesc_core_set_duty_percent(VescCore* core, float percent, uint8_t id) {
   om_vesc_core_set_duty(core, percent * core->max_duty_, id);
 }
 
-void om_vesc_core_set_rpm(VescCore* core, int32_t rpm, int id) {
+void om_vesc_core_set_rpm(VescCore* core, int32_t rpm, uint8_t id) {
   om_vesc_core_set_output_i32(core, VESC_CAN_PACKET_SET_RPM, rpm, id);
 }
 
@@ -161,34 +151,18 @@ void om_vesc_core_get_output(const VescCore* core, uint32_t* id, uint8_t out[8],
   memcpy(out, core->output_.data, 8);
 }
 
-int32_t om_vesc_core_get_rpm(const VescCore* core, int id) {
-  const int index = om_vesc_id_to_index(id);
-  if (index < 0) {
-    return 0;
-  }
-  return core->data_[index].rpm;
+int32_t om_vesc_core_get_rpm(const VescCore* core, uint8_t id) {
+  return core->data_[id].rpm;
 }
 
-int16_t om_vesc_core_get_current_x10(const VescCore* core, int id) {
-  const int index = om_vesc_id_to_index(id);
-  if (index < 0) {
-    return 0;
-  }
-  return core->data_[index].current_x10;
+int16_t om_vesc_core_get_current_x10(const VescCore* core, uint8_t id) {
+  return core->data_[id].current_x10;
 }
 
-int16_t om_vesc_core_get_duty_x1000(const VescCore* core, int id) {
-  const int index = om_vesc_id_to_index(id);
-  if (index < 0) {
-    return 0;
-  }
-  return core->data_[index].duty_x1000;
+int16_t om_vesc_core_get_duty_x1000(const VescCore* core, uint8_t id) {
+  return core->data_[id].duty_x1000;
 }
 
-VescData om_vesc_core_get_data(const VescCore* core, int id) {
-  const int index = om_vesc_id_to_index(id);
-  if (index < 0) {
-    return om_vesc_data_init();
-  }
-  return core->data_[index];
+VescData om_vesc_core_get_data(const VescCore* core, uint8_t id) {
+  return core->data_[id];
 }
