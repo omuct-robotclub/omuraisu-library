@@ -83,6 +83,14 @@ if(OMURAISU_CAN_STM32_ENABLE)
     endif()
 endif()
 
+add_library(omuraisu_vesc
+    src/vesc/vesc_core.c
+)
+target_include_directories(omuraisu_vesc PUBLIC
+    $<BUILD_INTERFACE:${OMURAISU_INCLUDE_DIR_C}>
+    $<INSTALL_INTERFACE:include>
+)
+
 add_library(omuraisu_dji
     src/dji/robomas_core.c
     src/dji/robomas.c
@@ -121,6 +129,7 @@ target_link_libraries(omuraisu_c INTERFACE
     omuraisu_dji
     omuraisu_controller
     omuraisu_servo
+    omuraisu_vesc
 )
 
 # C++ ラッパ ライブラリ
@@ -263,7 +272,7 @@ endif()
 # インストール設定
 include(GNUInstallDirs)
 
-install(TARGETS omuraisu_coordinate omuraisu_pid omuraisu_chassis omuraisu_cobs omuraisu_can omuraisu_dji omuraisu_controller omuraisu_servo omuraisu_c omuraisu_cpp_can omuraisu_cpp_chassis omuraisu_cpp_cobs omuraisu_cpp_controller omuraisu_cpp_coordinate omuraisu_cpp_dji omuraisu_cpp_pid omuraisu_cpp omuraisu_cpp_servo omuraisu
+install(TARGETS omuraisu_coordinate omuraisu_pid omuraisu_chassis omuraisu_cobs omuraisu_can omuraisu_vesc omuraisu_dji omuraisu_controller omuraisu_servo omuraisu_c omuraisu_cpp_can omuraisu_cpp_chassis omuraisu_cpp_cobs omuraisu_cpp_controller omuraisu_cpp_coordinate omuraisu_cpp_dji omuraisu_cpp_pid omuraisu_cpp omuraisu_cpp_servo omuraisu
     EXPORT omuraisu-targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
