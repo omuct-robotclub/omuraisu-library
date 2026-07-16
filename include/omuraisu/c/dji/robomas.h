@@ -1,10 +1,10 @@
 #ifndef ROBOMAS_H
 #define ROBOMAS_H
 
+#include <stddef.h>
+
 #include "can/can_interface.h"
 #include "robomas_core.h"
-
-#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
