@@ -1,6 +1,7 @@
+#include "dji/robomas_core.h"
+
 #include <stdint.h>
 #include <string.h>
-#include "dji/robomas_core.h"
 
 const uint16_t M3508_GEAR_RATIO = 19;
 const uint16_t M2006_GEAR_RATIO = 36;
@@ -40,7 +41,8 @@ RobomasCore om_rm_core_init() {
 
 void om_rm_core_set_max_output(RobomasCore* core, int16_t max) {
   if (max == INT16_MIN) {
-    core->max_output_ = INT16_MAX;  // INT16_MINは絶対値がINT16_MAXより大きいため、特別に処理
+    core->max_output_ =
+        INT16_MAX;  // INT16_MINは絶対値がINT16_MAXより大きいため、特別に処理
     return;
   }
   core->max_output_ = max > 0 ? max : -max;
@@ -83,7 +85,8 @@ void om_rm_core_get_output(const RobomasCore* core, uint8_t out[2][8]) {
   memcpy(out, core->output_, sizeof(core->output_));
 }
 
-void om_rm_core_get_output_group(const RobomasCore* core, uint8_t out[8], const unsigned int group) {
+void om_rm_core_get_output_group(const RobomasCore* core, uint8_t out[8],
+                                 const unsigned int group) {
   if (group > 1) {
     memset(out, 0, 8);
     return;
