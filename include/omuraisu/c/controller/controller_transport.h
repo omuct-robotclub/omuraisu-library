@@ -61,7 +61,8 @@ SerialPacket om_ctrl_serial_packet_init(void);
 SerialPacket om_ctrl_serial_packet_from_data(const ControllerData* data);
 ControllerData om_ctrl_serial_packet_to_data(const SerialPacket* packet);
 ControllerData om_ctrl_data_from_serial(const SerialPacket* packet);
-ControllerData om_ctrl_data_from_can(uint32_t id, const uint8_t data[8]);
+bool om_ctrl_data_from_can(ControllerData* destination, uint32_t id,
+                           const uint8_t data[8]);
 bool om_ctrl_data_to_can_analog(const ControllerData* data, uint8_t out[8]);
 bool om_ctrl_data_to_can_buttons(const ControllerData* data, uint8_t out[8]);
 ControllerData om_ctrl_data_from_ros_joy(const float* axes, size_t axes_size,

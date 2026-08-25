@@ -19,7 +19,8 @@ struct SerialPacket : public ::SerialPacket {
   ControllerData to_data() const;
 } __attribute__((packed));
 
-ControllerData data_from_can(uint32_t id, const uint8_t data[8]);
+bool data_from_can(ControllerData* destination, uint32_t id,
+                   const uint8_t data[8]);
 ControllerData data_from_ros_joy(const float* axes, size_t axes_size,
                                  const int32_t* buttons, size_t buttons_size);
 bool data_to_can_analog(const ControllerData& data, uint8_t out[8]);

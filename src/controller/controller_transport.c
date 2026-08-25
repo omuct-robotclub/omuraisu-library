@@ -70,71 +70,74 @@ ControllerData om_ctrl_data_from_serial(const SerialPacket* packet) {
   return om_ctrl_serial_packet_to_data(packet);
 }
 
-ControllerData om_ctrl_data_from_can(uint32_t id, const uint8_t data[8]) {
-  ControllerData controller = {0};
-
+bool om_ctrl_data_from_can(ControllerData* destination, uint32_t id,
+                           const uint8_t data[8]) {
+  if (destination == NULL) {
+    return false;
+  }
   if (data == NULL) {
-    return controller;
+    *destination = (ControllerData){0};
+    return false;
   }
 
   switch (id) {
     case OM_CONTROLLER_CAN_ID_ANALOG:
-      controller.left_x = (int8_t)data[0] / 127.0f;
-      controller.left_y = (int8_t)data[1] / 127.0f;
-      controller.right_x = (int8_t)data[2] / 127.0f;
-      controller.right_y = (int8_t)data[3] / 127.0f;
-      controller.l2_trigger = data[4] / 255.0f;
-      controller.r2_trigger = data[5] / 255.0f;
-      return controller;
+      destination->left_x = (int8_t)data[0] / 127.0f;
+      destination->left_y = (int8_t)data[1] / 127.0f;
+      destination->right_x = (int8_t)data[2] / 127.0f;
+      destination->right_y = (int8_t)data[3] / 127.0f;
+      destination->l2_trigger = data[4] / 255.0f;
+      destination->r2_trigger = data[5] / 255.0f;
+      return true;
 
     case OM_CONTROLLER_CAN_ID_BUTTONS:
       if ((data[0] >> 2) & 1) {
-        controller.dpad |= OM_CONTROLLER_DPAD_UP;
+        destination->dpad |= OM_CONTROLLER_DPAD_UP;
       }
       if (data[0] & 1) {
-        controller.dpad |= OM_CONTROLLER_DPAD_DOWN;
+        destination->dpad |= OM_CONTROLLER_DPAD_DOWN;
       }
       if ((data[0] >> 1) & 1) {
-        controller.dpad |= OM_CONTROLLER_DPAD_LEFT;
+        destination->dpad |= OM_CONTROLLER_DPAD_LEFT;
       }
       if ((data[0] >> 3) & 1) {
-        controller.dpad |= OM_CONTROLLER_DPAD_RIGHT;
+        destination->dpad |= OM_CONTROLLER_DPAD_RIGHT;
       }
 
       if (data[1] & 0x08) {
-        controller.buttons |= OM_CONTROLLER_BUTTON_CIRCLE;
+        destination->buttons |= OM_CONTROLLER_BUTTON_CIRCLE;
       }
       if (data[1] & 0x04) {
-        controller.buttons |= OM_CONTROLLER_BUTTON_TRIANGLE;
+        destination->buttons |= OM_CONTROLLER_BUTTON_TRIANGLE;
       }
       if (data[1] & 0x02) {
-        controller.buttons |= OM_CONTROLLER_BUTTON_SQUARE;
+        destination->buttons |= OM_CONTROLLER_BUTTON_SQUARE;
       }
       if (data[1] & 0x01) {
-        controller.buttons |= OM_CONTROLLER_BUTTON_CROSS;
+        destination->buttons |= OM_CONTROLLER_BUTTON_CROSS;
       }
       if (data[2]) {
-        controller.buttons |= OM_CONTROLLER_BUTTON_L1;
+        destination->buttons |= OM_CONTROLLER_BUTTON_L1;
       }
       if (data[3]) {
-        controller.buttons |= OM_CONTROLLER_BUTTON_R1;
+        destination->buttons |= OM_CONTROLLER_BUTTON_R1;
       }
       if (data[4]) {
-        controller.buttons |= OM_CONTROLLER_BUTTON_L3;
+        destination->buttons |= OM_CONTROLLER_BUTTON_L3;
       }
       if (data[5]) {
-        controller.buttons |= OM_CONTROLLER_BUTTON_R3;
+        destination->buttons |= OM_CONTROLLER_BUTTON_R3;
       }
       if (data[6]) {
-        controller.buttons |= OM_CONTROLLER_BUTTON_OPTIONS;
+        destination->buttons |= OM_CONTROLLER_BUTTON_OPTIONS;
       }
       if (data[7]) {
-        controller.buttons |= OM_CONTROLLER_BUTTON_SHARE;
+        destination->buttons |= OM_CONTROLLER_BUTTON_SHARE;
       }
-      return controller;
+      return true;
 
     default:
-      return controller;
+      return false;
   }
 }
 

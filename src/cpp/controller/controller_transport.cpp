@@ -27,11 +27,10 @@ ControllerData SerialPacket::to_data() const {
   return out;
 }
 
-ControllerData data_from_can(uint32_t id, const uint8_t data[8]) {
-  ::ControllerData c_data = om_ctrl_data_from_can(id, data);
-  ControllerData out = {};
-  static_cast<::ControllerData&>(out) = c_data;
-  return out;
+bool data_from_can(ControllerData* destination, uint32_t id,
+                   const uint8_t data[8]) {
+  if (om_ctrl_data_from_can(destination, id, data)) return true;
+  return false;
 }
 
 ControllerData data_from_ros_joy(const float* axes, size_t axes_size,
