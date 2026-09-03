@@ -91,6 +91,8 @@ bool om_ctrl_data_from_can(ControllerData* destination, uint32_t id,
       return true;
 
     case OM_CONTROLLER_CAN_ID_BUTTONS:
+      destination->dpad = 0;
+      destination->buttons = 0;
       if ((data[0] >> 2) & 1) {
         destination->dpad |= OM_CONTROLLER_DPAD_UP;
       }
