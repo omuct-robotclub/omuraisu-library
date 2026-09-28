@@ -14,8 +14,6 @@ extern const uint16_t ANGLE_MAX_VALUE;
 extern const uint32_t TX_ID_GROUP1;
 extern const uint32_t TX_ID_GROUP2;
 
-
-
 /// @brief Robomasから受信したモーターデータ
 typedef struct {
   uint16_t angle;
