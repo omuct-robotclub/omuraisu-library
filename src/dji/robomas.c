@@ -52,6 +52,14 @@ uint16_t om_rm_get_angle(const Robomas* rm, int id) {
   return om_rm_core_get_angle(&rm->core, id);
 }
 
+int32_t om_rm_get_rotation_count(const Robomas* rm, int id) {
+  return om_rm_core_get_rotation_count(&rm->core, id);
+}
+
+float om_rm_get_total_angle(const Robomas* rm, int id) {
+  return om_rm_core_get_total_angle(&rm->core, id);
+}
+
 int16_t om_rm_get_rpm(const Robomas* rm, int id) {
   return om_rm_core_get_rpm(&rm->core, id);
 }

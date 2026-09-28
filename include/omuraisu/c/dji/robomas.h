@@ -33,6 +33,10 @@ int16_t om_rm_get_current(const Robomas* rm, int id);
 
 uint16_t om_rm_get_angle(const Robomas* rm, int id);
 
+int32_t om_rm_get_rotation_count(const Robomas* rm, int id);
+
+float om_rm_get_total_angle(const Robomas* rm, int id);
+
 int16_t om_rm_get_rpm(const Robomas* rm, int id);
 
 uint8_t om_rm_get_temp(const Robomas* rm, int id);
