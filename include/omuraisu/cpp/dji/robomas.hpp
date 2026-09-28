@@ -21,6 +21,8 @@ class Robomas {
   void get_output_group(uint8_t out[8], unsigned int group) const;
   int16_t get_current(int id) const;
   uint16_t get_angle(int id) const;
+  int32_t get_rotation_count(int id) const;
+  float get_total_angle(int id) const;
   int16_t get_rpm(int id) const;
   uint8_t get_temp(int id) const;
   RobomasData get_data(int id) const;

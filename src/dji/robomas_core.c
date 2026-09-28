@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#define TWO_PI_RAD (6.28318530717958647692f)
+
 const uint16_t M3508_GEAR_RATIO = 19;
 const uint16_t M2006_GEAR_RATIO = 36;
 const uint16_t ANGLE_MAX_VALUE = 8192;
@@ -19,14 +21,34 @@ RobomasData om_rm_data_init() {
   data.rpm = 0;
   data.current = 0;
   data.temp = 0;
+  data.angle_initialized = false;
+  data.rotation_count = 0;
+  data.total_angle = 0.0f;
   return data;
 }
 
 void om_rm_data_parse(RobomasData* data, const uint8_t raw[8]) {
+  const uint16_t previous_angle = data->angle;
   data->angle = ((uint16_t)raw[0] << 8) | (uint16_t)raw[1];
   data->rpm = ((int16_t)raw[2] << 8) | (int16_t)raw[3];
   data->current = ((int16_t)raw[4] << 8) | (int16_t)raw[5];
   data->temp = raw[6];
+
+  if (!data->angle_initialized) {
+    data->angle_initialized = true;
+    return;
+  }
+
+  int32_t angle_diff = (int32_t)data->angle - (int32_t)previous_angle;
+  if (angle_diff < -(int32_t)(ANGLE_MAX_VALUE / 2U)) {
+    angle_diff += (int32_t)ANGLE_MAX_VALUE;
+    ++data->rotation_count;
+  } else if (angle_diff > (int32_t)(ANGLE_MAX_VALUE / 2U)) {
+    angle_diff -= (int32_t)ANGLE_MAX_VALUE;
+    --data->rotation_count;
+  }
+
+  data->total_angle += (float)angle_diff * TWO_PI_RAD / (float)ANGLE_MAX_VALUE;
 }
 
 RobomasCore om_rm_core_init() {
@@ -85,8 +107,7 @@ void om_rm_core_get_output(const RobomasCore* core, uint8_t out[2][8]) {
   memcpy(out, core->output_, sizeof(core->output_));
 }
 
-void om_rm_core_get_output_group(const RobomasCore* core, uint8_t out[8],
-                                 const unsigned int group) {
+void om_rm_core_get_output_group(const RobomasCore* core, uint8_t out[8], const unsigned int group) {
   if (group > 1) {
     memset(out, 0, 8);
     return;
@@ -108,6 +129,22 @@ uint16_t om_rm_core_get_angle(const RobomasCore* core, int id) {
   }
   int index = id - 1;
   return core->data_[index].angle;
+}
+
+int32_t om_rm_core_get_rotation_count(const RobomasCore* core, int id) {
+  if (id < 1 || id > 8) {
+    return 0;
+  }
+  int index = id - 1;
+  return core->data_[index].rotation_count;
+}
+
+float om_rm_core_get_total_angle(const RobomasCore* core, int id) {
+  if (id < 1 || id > 8) {
+    return 0.0f;
+  }
+  int index = id - 1;
+  return core->data_[index].total_angle;
 }
 
 int16_t om_rm_core_get_rpm(const RobomasCore* core, int id) {

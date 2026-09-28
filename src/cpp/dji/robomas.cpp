@@ -45,6 +45,12 @@ void Robomas::get_output_group(uint8_t out[8], unsigned int group) const {
 }
 int16_t Robomas::get_current(int id) const { return core_.get_current(id); }
 uint16_t Robomas::get_angle(int id) const { return core_.get_angle(id); }
+int32_t Robomas::get_rotation_count(int id) const {
+  return core_.get_rotation_count(id);
+}
+float Robomas::get_total_angle(int id) const {
+  return core_.get_total_angle(id);
+}
 int16_t Robomas::get_rpm(int id) const { return core_.get_rpm(id); }
 uint8_t Robomas::get_temp(int id) const { return core_.get_temp(id); }
 RobomasData Robomas::get_data(int id) const { return core_.get_data(id); }

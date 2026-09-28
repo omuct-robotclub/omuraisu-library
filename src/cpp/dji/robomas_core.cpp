@@ -53,6 +53,12 @@ int16_t RobomasCore::get_current(int id) const {
 uint16_t RobomasCore::get_angle(int id) const {
   return om_rm_core_get_angle(&core_, id);
 }
+int32_t RobomasCore::get_rotation_count(int id) const {
+  return om_rm_core_get_rotation_count(&core_, id);
+}
+float RobomasCore::get_total_angle(int id) const {
+  return om_rm_core_get_total_angle(&core_, id);
+}
 int16_t RobomasCore::get_rpm(int id) const {
   return om_rm_core_get_rpm(&core_, id);
 }
